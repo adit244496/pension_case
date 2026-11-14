@@ -99,7 +99,7 @@ echo "Done."
 echo "  Service : systemctl status pension"
 echo "  Logs    : journalctl -u pension -f"
 echo "  Data    : $DATA_DIR"
-echo "  Sign in : admin / Intellux@6202  (change it from the Account page)"
+echo "  Sign in : admin / ${PENSION_DEFAULT_PASSWORD:-ChangeMe@123}  (change it from the Account page)"
 echo
 echo "Open http://<your-ec2-public-dns>/ in a browser."
 echo "For HTTPS: sudo apt install certbot python3-certbot-nginx && sudo certbot --nginx"
