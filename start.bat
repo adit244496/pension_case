@@ -8,6 +8,16 @@ if not exist backend\.venv (
   exit /b 1
 )
 
+REM setup.bat unpacks a private Node here when the system one is missing or
+REM too old; put it first so both windows below use it.
+if exist "%LOCALAPPDATA%\Programs\nodejs22\node.exe" set "PATH=%LOCALAPPDATA%\Programs\nodejs22;%PATH%"
+node -e "var v=process.versions.node.split('.').map(Number);process.exit(v[0]>22||(v[0]===22&&v[1]>=13)?0:1)" >nul 2>&1
+if errorlevel 1 (
+  echo Node.js 22.13 or newer is needed. Run setup.bat to install it.
+  pause
+  exit /b 1
+)
+
 REM Pick the first free API port from 8000 upward, in case one is still in use.
 set API_PORT=
 for %%P in (8000 8001 8002 8003) do (

@@ -13,6 +13,7 @@ if not exist backend\.venv (
 )
 
 echo === Web interface ===
+if exist "%LOCALAPPDATA%\Programs\nodejs22\node.exe" set "PATH=%LOCALAPPDATA%\Programs\nodejs22;%PATH%"
 cd frontend
 call npm run build || goto :err
 cd ..

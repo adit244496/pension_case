@@ -9,6 +9,11 @@ set "PY_VERSION=3.11.9"
 set "PY_HOME=%LOCALAPPDATA%\Programs\Python\Python311"
 set "PY="
 
+REM Node is unpacked here, for the current user, when missing or too old.
+set "NODE_VERSION=22.23.5"
+set "NODE_MIN=22.13"
+set "NODE_HOME=%LOCALAPPDATA%\Programs\nodejs22"
+
 echo === Python ===
 call :find_python
 if not defined PY (
@@ -50,14 +55,34 @@ echo Preparing database...
 cd ..
 
 echo.
-echo === Frontend ===
-where npm >nul 2>&1
+echo === Node.js ===
+REM The web interface needs Node %NODE_MIN% or newer (pdfjs-dist and Vite).
+REM A private copy in NODE_HOME is preferred; start.bat puts it on PATH too.
+if exist "%NODE_HOME%\node.exe" set "PATH=%NODE_HOME%;%PATH%"
+set "NODE_FRESH="
+call :check_node
 if errorlevel 1 (
-  echo Node.js was not found. Install the LTS version from https://nodejs.org
-  echo then run setup.bat again.
-  goto :err
+  echo Node.js %NODE_MIN% or newer was not found. Installing Node %NODE_VERSION% to:
+  echo   %NODE_HOME%
+  call :install_node || goto :err
+  set "PATH=%NODE_HOME%;!PATH!"
+  set "NODE_FRESH=1"
+  call :check_node
+  if errorlevel 1 (
+    echo Node was installed but could not be started from %NODE_HOME%.
+    goto :err
+  )
 )
+node -p "'Using ' + process.execPath + ' (' + process.version + ')'"
+
+echo.
+echo === Frontend ===
 cd frontend
+REM Packages installed by an older Node/npm can be incomplete; start clean.
+if defined NODE_FRESH if exist node_modules (
+  echo Removing packages installed by the old Node version...
+  rmdir /s /q node_modules
+)
 call npm install || goto :err
 cd ..
 
@@ -125,4 +150,50 @@ if errorlevel 1 (
 )
 del "%PY_INSTALLER%" >nul 2>&1
 echo Python installed.
+exit /b 0
+
+REM ------------------------------------------------------------------------
+REM Exit code 0 when "node" on PATH is version NODE_MIN or newer.
+:check_node
+where node >nul 2>&1 || exit /b 1
+node -e "var v=process.versions.node.split('.').map(Number),m='%NODE_MIN%'.split('.').map(Number);process.exit(v[0]>m[0]||(v[0]===m[0]&&v[1]>=m[1])?0:1)" >nul 2>&1
+exit /b %errorlevel%
+
+REM ------------------------------------------------------------------------
+REM Downloads the official Node.js zip and unpacks it into NODE_HOME. No
+REM installer and no administrator rights; an existing system Node is untouched.
+:install_node
+set "NODE_ARCH=x64"
+if /i "%PROCESSOR_ARCHITECTURE%"=="ARM64" set "NODE_ARCH=arm64"
+set "NODE_PKG=node-v%NODE_VERSION%-win-%NODE_ARCH%"
+set "NODE_ZIP=%TEMP%\%NODE_PKG%.zip"
+set "NODE_TMP=%TEMP%\%NODE_PKG%-unpack"
+set "NODE_URL=https://nodejs.org/dist/v%NODE_VERSION%/%NODE_PKG%.zip"
+
+echo Downloading %NODE_URL% ...
+curl.exe -L --fail -o "%NODE_ZIP%" "%NODE_URL%" 2>nul
+if errorlevel 1 (
+  powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -UseBasicParsing -Uri '%NODE_URL%' -OutFile '%NODE_ZIP%'"
+)
+if not exist "%NODE_ZIP%" (
+  echo Could not download Node.js. Check the internet connection, or install
+  echo Node.js %NODE_VERSION% LTS manually from https://nodejs.org
+  exit /b 1
+)
+
+echo Unpacking Node.js...
+if exist "%NODE_TMP%" rmdir /s /q "%NODE_TMP%"
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "Expand-Archive -LiteralPath '%NODE_ZIP%' -DestinationPath '%NODE_TMP%' -Force"
+if not exist "%NODE_TMP%\%NODE_PKG%\node.exe" (
+  echo Could not unpack %NODE_ZIP%.
+  exit /b 1
+)
+if exist "%NODE_HOME%" rmdir /s /q "%NODE_HOME%"
+if not exist "%LOCALAPPDATA%\Programs" mkdir "%LOCALAPPDATA%\Programs"
+move "%NODE_TMP%\%NODE_PKG%" "%NODE_HOME%" >nul || exit /b 1
+rmdir /s /q "%NODE_TMP%" >nul 2>&1
+del "%NODE_ZIP%" >nul 2>&1
+echo Node.js installed.
 exit /b 0
