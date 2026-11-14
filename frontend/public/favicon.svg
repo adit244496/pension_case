@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Pension case system">
+  <!-- A form sheet with a folded corner: this app is a stack of 26 of them.
+       The shapes are deliberately blunt, because at 16px in a browser tab
+       anything finer turns to mud. Colour is the app accent from styles.css. -->
+  <rect width="32" height="32" rx="7" fill="#0b5c8a"/>
+  <path d="M10 6h8.5L23.5 11v13.5A1.5 1.5 0 0 1 22 26H10a1.5 1.5 0 0 1-1.5-1.5v-17A1.5 1.5 0 0 1 10 6z" fill="#ffffff"/>
+  <path d="M18.5 6l5 5h-4a1 1 0 0 1-1-1z" fill="#9dc4dc"/>
+  <g fill="#0b5c8a">
+    <rect x="11.5" y="14" width="9" height="1.8" rx=".9"/>
+    <rect x="11.5" y="17.6" width="9" height="1.8" rx=".9"/>
+    <rect x="11.5" y="21.2" width="6" height="1.8" rx=".9"/>
+  </g>
+</svg>

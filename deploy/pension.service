@@ -1,0 +1,37 @@
+[Unit]
+Description=Pension Case System (DCRG)
+After=network.target
+
+[Service]
+Type=exec
+User=@APP_USER@
+Group=@APP_USER@
+WorkingDirectory=@APP_DIR@/backend
+
+Environment="PENSION_DB=@DATA_DIR@/pension.db"
+Environment="PENSION_STORAGE=@DATA_DIR@/storage"
+Environment="PENSION_SECRET=@DATA_DIR@/.secret"
+Environment="PENSION_FRONTEND=@APP_DIR@/frontend/dist"
+Environment="PENSION_FONT_LATIN=@FONT_LATIN@"
+Environment="PENSION_FONT_DEVANAGARI=@FONT_DEVANAGARI@"
+# LibreOffice needs a writable HOME for its profile.
+Environment="HOME=@DATA_DIR@"
+
+# One worker: LibreOffice conversion is CPU-bound and serialised anyway, and a
+# single worker keeps the SQLite database free of write contention.
+ExecStart=@APP_DIR@/backend/.venv/bin/python -m uvicorn app.main:app \
+    --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers
+
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+
+# Hardening: the service only needs to write to its own data directory.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=@DATA_DIR@ @APP_DIR@/backend/templates
+
+[Install]
+WantedBy=multi-user.target

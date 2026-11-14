@@ -1,0 +1,15 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+sqlalchemy==2.0.36
+pydantic==2.10.4
+python-multipart==0.0.20
+docxtpl==0.19.0
+python-docx==1.1.2
+Jinja2==3.1.5
+pypdf==5.1.0
+num2words==0.5.14
+# Watches the storage folder so a save in Word is picked up as it happens.
+# uvicorn[standard] already pulls this in; named here because the app uses it
+# in its own right.
+watchfiles==1.2.0
+pywin32==308 ; sys_platform == 'win32'

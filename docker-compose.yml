@@ -1,0 +1,17 @@
+services:
+  pension:
+    build: .
+    image: pension-case
+    container_name: pension
+    restart: unless-stopped
+    ports:
+      - "80:8000"
+    volumes:
+      - pension-data:/data
+    environment:
+      # Set this if the site is served from a different origin than the API.
+      # PENSION_ORIGINS: "https://pension.example.org"
+      TZ: Asia/Kolkata
+
+volumes:
+  pension-data:
