@@ -46,7 +46,7 @@ six-monthly periods, gratuity **₹ 2,25,600** — matching the scanned original
 
 ## Setup (Windows)
 
-Requires **Python 3.11+**, **Node.js 18+**, and **Microsoft Word** (used to make
+Requires **Python 3.11+**, **Node.js 22.13+** (setup.bat installs both if missing), and **Microsoft Word** (used to make
 the PDFs). LibreOffice is used automatically if Word is not present.
 
 ```bat
